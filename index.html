@@ -26,7 +26,6 @@
         <li><a href="#projects">Projects</a></li>
         <li><a href="#research">Research</a></li>
         <li><a href="#blog">Blog</a></li>
-        <li><a href="#demos">Demos</a></li>
         <li><a href="#about">About</a></li>
         <li><a href="#contact">Contact</a></li>
       </ul>
@@ -74,50 +73,6 @@
       <article id="blog-post" class="blog-post hidden"></article>
     </section>
 
-    <!-- Demos -->
-    <section id="demos" class="route">
-      <h2>Demos</h2>
-      <div class="demo-grid">
-        <div class="demo-card">
-          <h3>VLM Map Builder (Placeholder)</h3>
-          <p>Describe a place and desired layers. The placeholder shows a mocked map and layer list.</p>
-          <div class="chat-ui" data-chat="map">
-            <div class="chat-log" id="chat-map-log"></div>
-            <div class="chat-input-row">
-              <input type="text" id="chat-map-input" placeholder="e.g., Show population density around Nairobi with roads and water bodies" />
-              <button class="btn icon" id="chat-map-send" aria-label="Send message">➤</button>
-              <button class="btn icon" id="chat-map-refresh" aria-label="Refresh conversation" title="Clear conversation">↺</button>
-            </div>
-          </div>
-          <div class="map-mock" id="map-mock">
-            <div class="map-placeholder">Mocked Map View</div>
-            <ul id="map-layers"></ul>
-          </div>
-        </div>
-        <div class="demo-card">
-          <h3>Family Lending Chat (Placeholder)</h3>
-          <p>Simulates budget-guardrails chat for requests from family/friends. No backend yet.</p>
-          <div class="chat-ui" data-chat="lend">
-            <div class="chat-log" id="chat-lend-log"></div>
-            <div class="chat-input-row">
-              <input type="text" id="chat-lend-input" placeholder="e.g., Request $150 for utilities, repay by 9/15" />
-              <button class="btn icon" id="chat-lend-send" aria-label="Send message">➤</button>
-              <button class="btn icon" id="chat-lend-refresh" aria-label="Refresh conversation" title="Clear conversation">↺</button>
-            </div>
-          </div>
-          <div class="policy-panel">
-            <h4>Mocked Policy</h4>
-            <ul>
-              <li>Monthly budget: $500</li>
-              <li>Per-request cap: $200</li>
-              <li>Min days to repay: 30</li>
-              <li>Categories allowed: utilities, groceries, transport</li>
-            </ul>
-          </div>
-        </div>
-      </div>
-    </section>
-
     <!-- About -->
     <section id="about" class="route">
       <h2>About</h2>
@@ -146,8 +101,9 @@
     </section>
   </main>
 
-  <footer class="site-footer">
-    <p>© <span id="year"></span> C‑Berry Labs · Canterbury Research</p>
+  <footer class="brand-banner">
+    <p style="text-align:center;font-size:1rem;letter-spacing:.5px;margin:0 0 18px;">Exploring Geospatial · AI · ML prototypes & research</p>
+    <p style="text-align:center;margin:0;font-size:.85rem;opacity:.85;">© <span id="year"></span> C‑Berry Labs · Canterbury Research</p>
   </footer>
 
   <script src="script.js" defer></script>

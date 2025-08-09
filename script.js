@@ -1,6 +1,6 @@
-// Basic SPA router + data-driven sections + blog (Markdown -> HTML) + demo placeholders
+// Basic SPA router + data-driven sections + blog (Markdown -> HTML)
 
-const routes = ["home", "projects", "research", "blog", "demos", "about", "contact"];
+const routes = ["home", "projects", "research", "blog", "about", "contact"]; // removed demos
 
 function $(sel, parent = document) { return parent.querySelector(sel); }
 function $all(sel, parent = document) { return Array.from(parent.querySelectorAll(sel)); }
@@ -39,14 +39,14 @@ document.addEventListener('DOMContentLoaded', () => {
   loadProjects();
   loadResearch();
   initBlog();
-  initDemos();
+  // initDemos removed
   initContact();
 });
 
 // Sample data (could be moved to separate JSON files later)
 const sampleProjects = [
-  { title: 'Visualizing Geopolitics', desc: 'A prompt‑to‑map VLM prototype that turns text summaries into cartographic layers, styles, and AOIs.', tags: ['VLM', 'Geopolitics', 'Maps'], link: '#demos' },
-  { title: 'Lending with Care', desc: 'A family‑lending chat sandbox with budget guardrails, categories, and terms—designed for clear approvals and boundaries.', tags: ['LLM', 'Finance', 'Guardrails'], link: '#demos' },
+  { title: 'Visualizing Geopolitics', desc: 'A prompt‑to‑map VLM prototype that turns text summaries into cartographic layers, styles, and AOIs.', tags: ['VLM', 'Geopolitics', 'Maps'], link: 'visualizing-geopolitics.html' },
+  { title: 'Lending with Care', desc: 'A family‑lending chat sandbox with budget guardrails, categories, and terms—designed for clear approvals and boundaries.', tags: ['LLM', 'Finance', 'Guardrails'], link: 'lending-with-care.html' },
   { title: 'Spatial Demand Forecasting', desc: 'Time‑series + spatial features to anticipate demand hot‑spots and guide resource placement.', tags: ['ML', 'Time Series'], link: '#projects' },
 ];
 
@@ -240,82 +240,6 @@ function markdownToHtml(md) {
   html = html.replace(/^(?!<h\d|<ul|<pre|<li|<p|<blockquote)(.+)$/gm, '<p>$1</p>');
 
   return html;
-}
-
-// Demos (placeholder logic)
-function initDemos() {
-  // Map demo
-  $('#chat-map-send').addEventListener('click', () => handleMapChat());
-  $('#chat-map-input').addEventListener('keydown', e => { if (e.key === 'Enter') handleMapChat(); });
-  const mapRefresh = document.getElementById('chat-map-refresh');
-  if (mapRefresh) mapRefresh.addEventListener('click', () => {
-    const log = document.getElementById('chat-map-log');
-    log.innerHTML = '';
-    document.getElementById('map-layers').innerHTML = '';
-    appendMsg(log, 'bot', 'Conversation reset. Describe a new map.');
-  });
-
-  // Lend demo
-  $('#chat-lend-send').addEventListener('click', () => handleLendChat());
-  $('#chat-lend-input').addEventListener('keydown', e => { if (e.key === 'Enter') handleLendChat(); });
-  const lendRefresh = document.getElementById('chat-lend-refresh');
-  if (lendRefresh) lendRefresh.addEventListener('click', () => {
-    const log = document.getElementById('chat-lend-log');
-    log.innerHTML = '';
-    appendMsg(log, 'bot', 'Conversation cleared. Submit a new request.');
-  });
-}
-
-function appendMsg(logEl, who, text) {
-  const msg = document.createElement('div');
-  msg.className = `msg ${who}`;
-  msg.innerHTML = `
-    <div class="avatar">${who === 'user' ? '🧑' : '🤖'}</div>
-    <div class="bubble">${text}</div>`;
-  logEl.appendChild(msg);
-  logEl.scrollTop = logEl.scrollHeight;
-}
-
-function handleMapChat() {
-  const input = $('#chat-map-input');
-  const log = $('#chat-map-log');
-  const text = input.value.trim();
-  if (!text) return;
-  appendMsg(log, 'user', text);
-  input.value = '';
-
-  // Mock intent parsing
-  setTimeout(() => {
-    const response = `Understood. Composing layers for: "${text}"\n• Base map: Dark\n• Layers: roads, water, population-density\n• AOI: Detected bounding box around mentioned location (mocked)`;
-    appendMsg(log, 'bot', response.replace(/\n/g,'<br/>'));
-    // Update mock map layers
-    const ul = $('#map-layers');
-    ul.innerHTML = '';
-    ['roads','water','population-density'].forEach(l => {
-      const li = document.createElement('li'); li.textContent = l; ul.appendChild(li);
-    });
-  }, 400);
-}
-
-function handleLendChat() {
-  const input = $('#chat-lend-input');
-  const log = $('#chat-lend-log');
-  const text = input.value.trim();
-  if (!text) return;
-  appendMsg(log, 'user', text);
-  input.value = '';
-
-  // Mock policy engine
-  setTimeout(() => {
-    // simple parse for amount
-    const amtMatch = text.replace(/[,\$]/g,'').match(/(\d+)(?:\.\d{1,2})?/);
-    const amount = amtMatch ? parseFloat(amtMatch[0]) : undefined;
-    let decision = 'approve';
-    let reason = 'within monthly budget and per-request cap.';
-    if (!amount || amount > 200) { decision = 'revise'; reason = 'requested amount exceeds per-request cap ($200).'; }
-    const reply = `Decision: ${decision.toUpperCase()}\nReason: ${reason}\nTerms: repay in 30 days; category must be utilities/groceries/transport.`;
-    appendMsg(log, 'bot', reply.replace(/\n/g,'<br/>'));
-  }, 400);
 }
 
 // Contact (no backend; pretend send)

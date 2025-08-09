@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Lending with Care · C‑Berry Labs</title>
+  <meta name="description" content="Family lending chat sandbox with budget guardrails and transparent terms." />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css" />
+  <style>
+    body { padding: clamp(1.2rem,2.5vw,2rem); max-width:1000px; margin:0 auto; }
+    header.project-header { display:flex; flex-direction:column; gap:.75rem; }
+    header.project-header .back { font-size:.9rem; opacity:.8; }
+    .layout { display:grid; gap:1.75rem; grid-template-columns: repeat(auto-fit,minmax(320px,1fr)); align-items:start; }
+    .panel { position:relative; padding:1.1rem 1.25rem 1.2rem; border-radius:18px; background:linear-gradient(145deg,rgba(40,42,56,.9),rgba(28,30,40,.85)); backdrop-filter:blur(12px); box-shadow:0 4px 24px -6px rgba(0,0,0,.55); }
+    .panel h3 { margin-top:0; font-size:1.05rem; letter-spacing:.5px; }
+    .chat-box { border:1px solid var(--border); border-radius:14px; padding:.75rem; background:linear-gradient(135deg,var(--panel-2),var(--panel)); display:flex; flex-direction:column; gap:.75rem; max-height:480px; }
+    .msgs { flex:1; overflow:auto; display:flex; flex-direction:column; gap:.65rem; }
+    .msg { position:relative; padding:.55rem .75rem .65rem; border-radius:14px; font-size:.8rem; line-height:1.3; background:linear-gradient(135deg,#2d3145,#1d202b); border:1px solid var(--border); }
+    .msg.user { background:linear-gradient(135deg,#4b3b72,#312845); }
+    form.chat-input { display:flex; gap:.6rem; }
+    form.chat-input input { flex:1; padding:.55rem .75rem; border-radius:10px; background:rgba(255,255,255,.06); border:1px solid rgba(255,255,255,.18); color:var(--text); }
+    form.chat-input button { padding:.55rem .95rem; }
+    .guardrails { font-size:.7rem; opacity:.7; line-height:1.4; }
+    .guardrail-item { padding:.4rem .55rem; background:rgba(255,255,255,.05); border:1px solid rgba(255,255,255,.1); border-radius:10px; }
+    .grid-small { display:grid; gap:.6rem; grid-template-columns:repeat(auto-fit,minmax(120px,1fr)); margin-top:.6rem; }
+    table.ledger { width:100%; border-collapse:collapse; font-size:.7rem; margin-top:.5rem; }
+    table.ledger th, table.ledger td { padding:.35rem .5rem; border:1px solid rgba(255,255,255,.1); text-align:left; }
+    table.ledger th { background:rgba(255,255,255,.07); font-weight:600; }
+    @media (max-width:720px){ body { padding:1rem .9rem 3rem; } .layout { grid-template-columns:1fr; } }
+  </style>
+</head>
+<body>
+  <header class="project-header">
+    <a class="back" href="index.html#projects">← Back to Projects</a>
+    <h1 class="gradient-text">Lending with Care</h1>
+    <p class="lead">Chat sandbox modeling transparent family lending: budgets, per‑request caps, repayment windows, and friendly explanations. Prototype logic only (no external AI call).</p>
+    <div class="tags" style="margin-top:-.25rem;"> <span class="tag">LLM</span> <span class="tag">Finance</span> <span class="tag">Guardrails</span></div>
+  </header>
+  <section class="layout" style="margin-top:1.1rem;">
+    <div class="panel">
+      <h3>1. Guardrail Configuration</h3>
+      <div class="grid-small">
+        <div class="guardrail-item"><strong>Total Budget</strong><br><span id="gr-budget">$1,000</span></div>
+        <div class="guardrail-item"><strong>Remaining</strong><br><span id="gr-remaining">$1,000</span></div>
+        <div class="guardrail-item"><strong>Per Request</strong><br><span id="gr-cap">$250</span></div>
+        <div class="guardrail-item"><strong>Repay Window</strong><br><span id="gr-window">60 days</span></div>
+      </div>
+      <p class="guardrails" style="margin-top:.7rem;">These constraints simulate an encoded policy. Each request is evaluated; approvals deduct from remaining budget and ledger is updated.</p>
+      <h3 style="margin-top:1.1rem;">2. Ledger</h3>
+      <table class="ledger" aria-label="Lending ledger" id="ledger-table">
+        <thead><tr><th>Date</th><th>Purpose</th><th>Amount</th><th>Status</th></tr></thead>
+        <tbody></tbody>
+      </table>
+    </div>
+    <div class="panel">
+      <h3>3. Chat Simulation</h3>
+      <div class="chat-box" id="chat-box">
+        <div class="msgs" id="msgs"></div>
+        <form class="chat-input" id="chat-form" autocomplete="off">
+          <input id="chat-input" placeholder="Ask for an amount..." />
+          <button class="btn primary" type="submit" aria-label="Send">➤</button>
+          <button class="btn" type="button" id="chat-reset" aria-label="Reset">↺</button>
+        </form>
+      </div>
+    </div>
+  </section>
+  <section class="brand-banner">
+    <p style="text-align:center;font-size:1rem;letter-spacing:.5px;margin:0 0 18px;">Responsible Family Lending Interactions</p>
+    <p style="text-align:center;margin:0;font-size:.85rem;opacity:.85;">© <span id="year"></span> C‑Berry Labs · Canterbury Research</p>
+  </section>
+  <script>
+    document.getElementById('year').textContent = new Date().getFullYear();
+
+    const config = { budget:1000, remaining:1000, cap:250, windowDays:60 };
+    const ledgerBody = document.querySelector('#ledger-table tbody');
+
+    function addLedger(purpose, amount, status){
+      const tr = document.createElement('tr');
+      tr.innerHTML = `<td>${new Date().toLocaleDateString()}</td><td>${purpose}</td><td>$${amount}</td><td>${status}</td>`;
+      ledgerBody.prepend(tr);
+    }
+
+    const msgs = document.getElementById('msgs');
+    function append(role,text){
+      const div = document.createElement('div');
+      div.className = 'msg '+role;
+      div.textContent = text;
+      msgs.appendChild(div);
+      msgs.scrollTop = msgs.scrollHeight;
+    }
+
+    function reset(){
+      msgs.innerHTML='';
+      ledgerBody.innerHTML='';
+      config.remaining = config.budget;
+      document.getElementById('gr-remaining').textContent = `$${config.remaining}`;
+      append('system','Hi! I help manage our agreed lending budget. Ask for an amount and a short purpose.');
+    }
+
+    function evaluate(text){
+      const amtMatch = text.replace(/[,]/g,'').match(/\$?(\d{1,5})(?:\.\d{1,2})?/);
+      const amount = amtMatch ? parseInt(amtMatch[1],10) : 0;
+      const purpose = text.replace(/\$?\d+.*/,'').trim() || 'Request';
+      if(!amount){ return append('assistant','Please include an amount, e.g., "$120 for textbooks".'); }
+      if(amount > config.cap){
+        append('assistant',`Request exceeds per‑request cap of $${config.cap}. Consider lowering or splitting.`);
+        addLedger(purpose, amount, 'Rejected (cap)');
+        return;
+      }
+      if(amount > config.remaining){
+        append('assistant',`Only $${config.remaining} remaining in the shared budget. Cannot approve this full amount.`);
+        addLedger(purpose, amount, 'Rejected (budget)');
+        return;
+      }
+      config.remaining -= amount;
+      document.getElementById('gr-remaining').textContent = `$${config.remaining}`;
+      addLedger(purpose, amount, 'Approved');
+      append('assistant',`Approved $${amount} for ${purpose.toLowerCase()}. Please plan to repay within ${config.windowDays} days.`);
+    }
+
+    document.getElementById('chat-form').addEventListener('submit', e=>{
+      e.preventDefault();
+      const input = document.getElementById('chat-input');
+      const val = input.value.trim();
+      if(!val) return;
+      append('user', val);
+      input.value='';
+      setTimeout(()=> evaluate(val), 250);
+    });
+
+    document.getElementById('chat-reset').addEventListener('click', reset);
+    reset();
+  </script>
+</body>
+</html>

@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Visualizing Geopolitics · C‑Berry Labs</title>
+  <meta name="description" content="Prompt-to-map VLM prototype turning text into cartographic layers and styles." />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css" />
+  <style>
+    body { padding: clamp(1.2rem,2.5vw,2rem); max-width: 1100px; margin: 0 auto; }
+    header.project-header { display:flex; flex-direction:column; gap:1rem; }
+    header.project-header .back { font-size:.9rem; opacity:.8; }
+    .layout { display:grid; gap:2rem; grid-template-columns: repeat(auto-fit,minmax(320px,1fr)); align-items:start; }
+    .panel { position:relative; padding:1.1rem 1.25rem 1.3rem; border-radius:18px; background:linear-gradient(145deg,rgba(40,42,56,.9),rgba(28,30,40,.85)); backdrop-filter:blur(12px); box-shadow:0 4px 24px -6px rgba(0,0,0,.55); }
+    .panel h3 { margin-top:0; font-size:1.05rem; letter-spacing:.5px; }
+    textarea { width:100%; background:rgba(255,255,255,.04); border:1px solid rgba(255,255,255,.15); color:var(--text); border-radius:12px; padding:.75rem .85rem; font:inherit; resize:vertical; min-height:140px; }
+    textarea:focus { outline:2px solid var(--brand); outline-offset:2px; }
+    .outputs { display:flex; flex-direction:column; gap:.75rem; max-height:420px; overflow:auto; }
+    .layer { padding:.6rem .75rem; border-radius:12px; background:linear-gradient(135deg,var(--panel-2),var(--panel)); border:1px solid var(--border); font-size:.8rem; line-height:1.2; }
+    .actions { display:flex; gap:.6rem; flex-wrap:wrap; margin-top:.75rem; }
+    .actions .btn { flex:1 1 auto; text-align:center; }
+    .map-preview { aspect-ratio: 4/3; background:radial-gradient(circle at 30% 35%, rgba(120,90,255,.35), transparent 60%), linear-gradient(160deg,#1d2030,#0f1118); border:1px solid var(--border); border-radius:14px; display:flex; align-items:center; justify-content:center; font-size:1.1rem; color:rgba(255,255,255,.6); text-align:center; padding:1rem; }
+    .json-out { font-family:ui-monospace,monospace; font-size:.75rem; white-space:pre-wrap; background:rgba(0,0,0,.35); padding:.8rem 1rem; border-radius:14px; border:1px solid var(--border); max-height:300px; overflow:auto; }
+    @media (max-width:720px){ body { padding:1rem .9rem 3rem; } .layout { grid-template-columns:1fr; } }
+  </style>
+</head>
+<body>
+  <header class="project-header">
+    <a class="back" href="index.html#projects">← Back to Projects</a>
+    <h1 class="gradient-text">Visualizing Geopolitics</h1>
+    <p class="lead">Prompt‑to‑map VLM exploration. Enter a geopolitical or economic text brief; receive candidate spatial layers, geometry types, style suggestions, and regional focus hints.</p>
+    <div class="tags" style="margin-top:-.25rem;"> <span class="tag">VLM</span> <span class="tag">Geopolitics</span> <span class="tag">Maps</span></div>
+  </header>
+  <section class="layout" style="margin-top:1.25rem;">
+    <div class="panel">
+      <h3>1. Describe the scenario</h3>
+      <textarea id="geo-prompt" placeholder="e.g., Emerging maritime trade corridors influenced by recent port infrastructure investments in East Africa"></textarea>
+      <div class="actions">
+        <button class="btn primary" id="btn-generate">Generate Layers</button>
+        <button class="btn" id="btn-clear">Clear</button>
+      </div>
+      <p style="font-size:.7rem;opacity:.65;margin-top:.6rem;">Prototype: heuristic + placeholder patterning (no remote calls). Not real model output.</p>
+    </div>
+    <div class="panel">
+      <h3>2. Candidate layer schema</h3>
+      <div id="layer-list" class="outputs" aria-live="polite"></div>
+    </div>
+    <div class="panel">
+      <h3>3. Preview / style hints</h3>
+      <div class="map-preview" id="map-preview">Map style & symbol preview</div>
+      <div class="json-out" id="json-out" aria-label="JSON output"></div>
+    </div>
+  </section>
+  <section class="brand-banner">
+    <p style="text-align:center;font-size:1rem;letter-spacing:.5px;margin:0 0 18px;">Visual Intelligence for Geopolitical Context</p>
+    <p style="text-align:center;margin:0;font-size:.85rem;opacity:.85;">© <span id="year"></span> C‑Berry Labs · Canterbury Research</p>
+  </section>
+  <script>
+    document.getElementById('year').textContent = new Date().getFullYear();
+
+    const promptEl = document.getElementById('geo-prompt');
+    const layerList = document.getElementById('layer-list');
+    const jsonOut = document.getElementById('json-out');
+    const mapPreview = document.getElementById('map-preview');
+
+    function pseudoHash(str){ let h=0; for(let i=0;i<str.length;i++){ h = (h*31 + str.charCodeAt(i))>>>0; } return h; }
+
+    function deriveLayers(text){
+      const themes = [];
+      const lower = text.toLowerCase();
+      if(/port|harbor|maritime|shipping/.test(lower)) themes.push({ name:'Ports', type:'point', style:'circle #ffaa55 8px' });
+      if(/trade|corridor|route|supply/.test(lower)) themes.push({ name:'Trade Routes', type:'line', style:'line #55d6ff 2px dash' });
+      if(/investment|infrastructure|facility/.test(lower)) themes.push({ name:'Infrastructure Projects', type:'point', style:'triangle #ffc93c 10px' });
+      if(/economic|market|demand|consumption/.test(lower)) themes.push({ name:'Economic Zones', type:'polygon', style:'fill #6a5dfd 40% border #6a5dfd' });
+      if(/energy|solar|wind|oil|gas|power/.test(lower)) themes.push({ name:'Energy Assets', type:'point', style:'square #ff6a8b 9px' });
+      if(/risk|conflict|dispute|security|piracy/.test(lower)) themes.push({ name:'Risk Areas', type:'polygon', style:'fill #ff4757 25% hatch' });
+      if(themes.length===0) themes.push({ name:'Focus Areas', type:'polygon', style:'fill #4d7cff 30% border #4d7cff' });
+      return themes;
+    }
+
+    function styleHint(layers){
+      return layers.map(l=>`Layer ${l.name}: ${l.type} → ${l.style}`).join('\n');
+    }
+
+    function generate(){
+      const text = promptEl.value.trim();
+      if(!text){ layerList.innerHTML = '<em style="opacity:.6;">Enter a scenario first.</em>'; jsonOut.textContent=''; mapPreview.textContent='Map style & symbol preview'; return; }
+      const layers = deriveLayers(text);
+      layerList.innerHTML = layers.map(l=>`<div class=\"layer\"><strong>${l.name}</strong><br><span style=\"opacity:.75;\">${l.type}</span><br>${l.style}</div>`).join('');
+      const data = { prompt:text, layers, styleHint: styleHint(layers), id: pseudoHash(text) };
+      jsonOut.textContent = JSON.stringify(data,null,2);
+      mapPreview.textContent = 'Symbol plan generated';
+    }
+
+    document.getElementById('btn-generate').addEventListener('click', generate);
+    document.getElementById('btn-clear').addEventListener('click', ()=>{ promptEl.value=''; generate(); });
+  </script>
+</body>
+</html>
