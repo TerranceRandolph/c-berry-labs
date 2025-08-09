@@ -247,10 +247,23 @@ function initDemos() {
   // Map demo
   $('#chat-map-send').addEventListener('click', () => handleMapChat());
   $('#chat-map-input').addEventListener('keydown', e => { if (e.key === 'Enter') handleMapChat(); });
+  const mapRefresh = document.getElementById('chat-map-refresh');
+  if (mapRefresh) mapRefresh.addEventListener('click', () => {
+    const log = document.getElementById('chat-map-log');
+    log.innerHTML = '';
+    document.getElementById('map-layers').innerHTML = '';
+    appendMsg(log, 'bot', 'Conversation reset. Describe a new map.');
+  });
 
   // Lend demo
   $('#chat-lend-send').addEventListener('click', () => handleLendChat());
   $('#chat-lend-input').addEventListener('keydown', e => { if (e.key === 'Enter') handleLendChat(); });
+  const lendRefresh = document.getElementById('chat-lend-refresh');
+  if (lendRefresh) lendRefresh.addEventListener('click', () => {
+    const log = document.getElementById('chat-lend-log');
+    log.innerHTML = '';
+    appendMsg(log, 'bot', 'Conversation cleared. Submit a new request.');
+  });
 }
 
 function appendMsg(logEl, who, text) {
