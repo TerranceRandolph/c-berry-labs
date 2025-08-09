@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>C‑Berry Labs — Canterbury Research</title>
+  <meta name="description" content="C‑Berry Labs by Canterbury Research: Geospatial, AI, and ML projects, research, demos, and insights." />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header class="site-header">
+    <div class="brand">
+      <div class="logo-mark" aria-hidden="true"><img src="cberry_labs_logo.png" alt="C-Berry Labs"></div>
+      <div class="brand-text">
+        <div class="brand-line-1">C‑Berry Labs</div>
+        <div class="brand-line-2">by Canterbury Research</div>
+      </div>
+    </div>
+    <nav class="nav">
+      <button class="nav-toggle" aria-label="Open Menu" aria-expanded="false">☰</button>
+      <ul class="nav-list">
+        <li><a href="#home" class="active">Home</a></li>
+        <li><a href="#projects">Projects</a></li>
+        <li><a href="#research">Research</a></li>
+        <li><a href="#blog">Blog</a></li>
+        <li><a href="#demos">Demos</a></li>
+        <li><a href="#about">About</a></li>
+        <li><a href="#contact">Contact</a></li>
+      </ul>
+    </nav>
+  </header>
+
+  <main id="app" class="container">
+    <!-- Home -->
+    <section id="home" class="route visible">
+      <div class="hero">
+        <h1>Geospatial. AI. Blockchain.</h1>
+        <p>Explorations, prototypes, and research at the intersection of location intelligence and machine learning.</p>
+        <div class="hero-cta">
+          <a class="btn primary" href="#projects">Explore Projects</a>
+          <a class="btn" href="#blog">Read Blog</a>
+        </div>
+      </div>
+      <div class="highlights" id="highlights"></div>
+      <section class="home-blog">
+        <h3>Latest from the Blog</h3>
+        <div class="blog-list" id="home-blog-teasers"></div>
+      </section>
+    </section>
+
+    <!-- Projects -->
+    <section id="projects" class="route">
+      <h2>Projects</h2>
+      <div class="cards grid" id="projects-grid"></div>
+    </section>
+
+    <!-- Research -->
+    <section id="research" class="route">
+      <h2>Research</h2>
+      <div class="cards grid" id="research-grid"></div>
+    </section>
+
+    <!-- Blog -->
+    <section id="blog" class="route">
+      <h2>Blog</h2>
+      <div class="blog-controls">
+        <input id="blog-search" type="search" placeholder="Search posts..." />
+        <select id="blog-tag-filter"><option value="">All tags</option></select>
+      </div>
+      <div id="blog-list" class="blog-list"></div>
+      <article id="blog-post" class="blog-post hidden"></article>
+    </section>
+
+    <!-- Demos -->
+    <section id="demos" class="route">
+      <h2>Demos</h2>
+      <div class="demo-grid">
+        <div class="demo-card">
+          <h3>VLM Map Builder (Placeholder)</h3>
+          <p>Describe a place and desired layers. The placeholder shows a mocked map and layer list.</p>
+          <div class="chat-ui" data-chat="map">
+            <div class="chat-log" id="chat-map-log"></div>
+            <div class="chat-input-row">
+              <input type="text" id="chat-map-input" placeholder="e.g., Show population density around Nairobi with roads and water bodies" />
+              <button class="btn" id="chat-map-send">Send</button>
+            </div>
+          </div>
+          <div class="map-mock" id="map-mock">
+            <div class="map-placeholder">Mocked Map View</div>
+            <ul id="map-layers"></ul>
+          </div>
+        </div>
+        <div class="demo-card">
+          <h3>Family Lending Chat (Placeholder)</h3>
+          <p>Simulates budget-guardrails chat for requests from family/friends. No backend yet.</p>
+          <div class="chat-ui" data-chat="lend">
+            <div class="chat-log" id="chat-lend-log"></div>
+            <div class="chat-input-row">
+              <input type="text" id="chat-lend-input" placeholder="e.g., Request $150 for utilities, repay by 9/15" />
+              <button class="btn" id="chat-lend-send">Send</button>
+            </div>
+          </div>
+          <div class="policy-panel">
+            <h4>Mocked Policy</h4>
+            <ul>
+              <li>Monthly budget: $500</li>
+              <li>Per-request cap: $200</li>
+              <li>Min days to repay: 30</li>
+              <li>Categories allowed: utilities, groceries, transport</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- About -->
+    <section id="about" class="route">
+      <h2>About</h2>
+      <p>Over a decade in geospatial data science, exploring practical AI/ML for spatial problems. This site shares prototypes, research notes, and learnings.</p>
+    </section>
+
+    <!-- Contact -->
+    <section id="contact" class="route">
+      <h2>Contact</h2>
+      <form id="contact-form">
+        <div class="form-row">
+          <label for="name">Name</label>
+          <input id="name" name="name" required />
+        </div>
+        <div class="form-row">
+          <label for="email">Email</label>
+          <input id="email" name="email" type="email" required />
+        </div>
+        <div class="form-row">
+          <label for="message">Message</label>
+          <textarea id="message" name="message" rows="5" required></textarea>
+        </div>
+        <button class="btn primary" type="submit">Send</button>
+        <p id="contact-status" role="status" aria-live="polite"></p>
+      </form>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <p>© <span id="year"></span> C‑Berry Labs · Canterbury Research</p>
+  </footer>
+
+  <script src="script.js" defer></script>
+</body>
+</html>
