@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Spirits Analytics · C‑Berry Labs</title>
+  <meta name="description" content="C‑Berry Labs Spirits Analytics: interactive profit and margin analysis for distribution.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+  <style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: var(--gradient-bg); color: var(--text); }
+  .container { width: min(1100px, 92%); margin: 0 auto; }
+  .page-title { font-family: "Space Grotesk", Inter, sans-serif; font-size: clamp(28px, 4vw, 40px); font-weight: 700; background: linear-gradient(90deg,var(--brand) 10%,var(--brand-2) 55%,var(--accent) 100%); -webkit-background-clip:text; background-clip:text; color:transparent; }
+  .subtitle { color: var(--muted); margin-top: 6px; }
+  .metrics-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px; margin-bottom: 24px; }
+  .metric-card { background: linear-gradient(155deg,#141a24,#10141b 65%); border-radius: 16px; padding: 16px; box-shadow: 0 2px 10px -4px rgba(0,0,0,.55),0 0 0 1px rgba(255,255,255,.04); }
+  .metric-label { color: var(--muted); font-size: 0.875rem; margin-bottom: 8px; }
+  .metric-value { font-size: 1.5rem; font-weight: 700; margin-bottom: 4px; }
+  .metric-blue { color: #60a5fa; } .metric-red { color: #f87171; } .metric-green { color: #34d399; } .metric-purple { color: #c084fc; } .metric-orange { color: #fb923c; }
+  .cost-breakdown { background: linear-gradient(155deg,#141a24,#10141b 65%); border-radius: 16px; padding: 20px; box-shadow: 0 2px 10px -4px rgba(0,0,0,.55),0 0 0 1px rgba(255,255,255,.04); margin: 24px 0; }
+  .cost-breakdown h2 { font-size: 1.25rem; font-weight: 700; margin-bottom: 14px; }
+  .cost-items { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; }
+  .cost-item { padding: 14px; border-radius: 12px; background: var(--panel); border: 1px solid var(--border); }
+  .cost-item-label { font-size: 0.85rem; color: var(--muted); margin-bottom: 8px; }
+  .cost-item-value { font-size: 1.15rem; font-weight: 700; margin-bottom: 4px; }
+  .cost-item-pct { font-size: 0.75rem; color: var(--muted); }
+  .bg-blue-50 { background: linear-gradient(145deg, rgba(56,189,248,.12), rgba(56,189,248,.05)); }
+  .bg-red-50 { background: linear-gradient(145deg, rgba(225,29,72,.12), rgba(225,29,72,.05)); }
+  .bg-yellow-50 { background: linear-gradient(145deg, rgba(245,158,11,.12), rgba(245,158,11,.05)); }
+  .bg-purple-50 { background: linear-gradient(145deg, rgba(147,51,234,.12), rgba(147,51,234,.05)); }
+  .bg-green-50 { background: linear-gradient(145deg, rgba(34,197,94,.12), rgba(34,197,94,.05)); }
+  .charts-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(420px, 1fr)); gap: 16px; margin-bottom: 24px; }
+  .chart-container { background: linear-gradient(155deg,#141a24,#10141b 65%); border-radius: 16px; padding: 20px; box-shadow: 0 2px 10px -4px rgba(0,0,0,.55),0 0 0 1px rgba(255,255,255,.04); }
+  .chart-container h3 { font-size: 1.05rem; font-weight: 700; margin-bottom: 12px; }
+  .chart-wrapper { position: relative; height: 320px; }
+  .table-container { background: linear-gradient(155deg,#141a24,#10141b 65%); border-radius: 16px; box-shadow: 0 2px 10px -4px rgba(0,0,0,.55),0 0 0 1px rgba(255,255,255,.04); overflow: hidden; margin-bottom: 32px; }
+  .table-header { font-size: 1.25rem; font-weight: 700; padding: 16px 18px; border-bottom: 1px solid var(--border); }
+    .add-form { padding: 16px 24px; border-bottom: 1px solid #e5e7eb; display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, auto)); gap: 12px; align-items: center; }
+    .add-form .field { display: flex; flex-direction: column; gap: 6px; }
+    .add-form label { font-size: 0.75rem; color: #6b7280; }
+    input[type="text"] { width: 220px; padding: 6px; border: 1px solid #d1d5db; border-radius: 4px; font-size: 0.875rem; }
+    input[type="text"]:focus { outline: none; border-color: #3b82f6; box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1); }
+    table { width: 100%; border-collapse: collapse; font-size: 0.9rem; color: var(--text); }
+    thead { background: #0b111a; border-bottom: 1px solid var(--border); }
+    th { padding: 12px; text-align: right; font-weight: 600; color: var(--text); }
+    th:first-child { text-align: left; }
+    td { padding: 12px; text-align: right; border-bottom: 1px solid var(--border); }
+    td:first-child { text-align: left; font-weight: 500; }
+    tbody tr:hover { background: rgba(255,255,255,.03); }
+    tfoot { background: #0b111a; border-top: 2px solid var(--border); font-weight: bold; }
+    /* High-contrast inputs */
+    .table-container input[type="number"],
+    .table-container input[type="text"] {
+      width: 86px;
+      padding: 8px 10px;
+      text-align: right;
+      font-size: 0.9rem;
+      color: var(--text);
+      background: var(--panel-2);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      min-height: 36px;
+      transition: border-color .2s, box-shadow .2s, background .2s;
+    }
+    .table-container input[type="number"]::placeholder,
+    .table-container input[type="text"]::placeholder { color: var(--muted); opacity: .75; }
+    .table-container input[type="number"]:hover,
+    .table-container input[type="text"]:hover { border-color: var(--panel-border-active); }
+    .table-container input[type="number"]:focus,
+    .table-container input[type="text"]:focus {
+      outline: none;
+      border-color: var(--brand-2);
+      box-shadow: 0 0 0 2px rgba(147,51,234,.35);
+      background: #0b111a;
+    }
+    /* Emphasize volume ml input */
+    .volume-ml input[type="number"] {
+      width: 110px;
+      text-align: center;
+      font-weight: 700;
+      letter-spacing: .5px;
+    }
+    .volume-display { font-size: 0.85rem; }
+    .volume-ml { font-weight: 600; }
+    .volume-cl { font-size: 0.72rem; color: var(--muted); }
+    .volume-percl { font-size: 0.72rem; color: var(--muted); }
+    .text-green { color: var(--success); } .text-red { color: #ef4444; } .text-orange { color: #f59e0b; }
+    .btn-primary { background: linear-gradient(90deg, var(--brand), var(--brand-2)); color: #fff; border: none; padding: 8px 12px; border-radius: 10px; cursor: pointer; font-size: 0.875rem; box-shadow:0 2px 12px -2px rgba(225,29,72,.5); }
+    .btn-primary:hover { filter: brightness(1.08); }
+  </style>
+</head>
+<body>
+  <div class="container" style="padding: clamp(1.2rem,2.5vw,2rem) 0;">
+    <header class="project-header" style="display:flex; flex-direction:column; gap:.6rem; margin-bottom: .6rem;">
+      <a class="back" href="index.html#projects" style="font-size:.9rem; opacity:.8;">← Back to Projects</a>
+      <h1 class="page-title">Spirits Analytics</h1>
+      <p class="subtitle">Interactive profit & margin analysis with shipping, delivery, and operational costs.</p>
+    </header>
+
+    <div class="metrics-grid" id="metricsGrid"></div>
+
+    <div class="cost-breakdown">
+      <h2>Cost Breakdown (Aggregate)</h2>
+      <div class="cost-items" id="costBreakdown"></div>
+    </div>
+
+    <div class="charts-grid">
+      <div class="chart-container">
+        <h3>Net Margin % by Product</h3>
+        <div class="chart-wrapper">
+          <canvas id="marginChart"></canvas>
+        </div>
+      </div>
+      <div class="chart-container">
+        <h3>Revenue vs Total Cost</h3>
+        <div class="chart-wrapper">
+          <canvas id="revenueChart"></canvas>
+        </div>
+      </div>
+    </div>
+
+    <div class="table-container">
+      <div class="table-header">Product-Level Analysis</div>
+      <div class="add-form">
+        <div class="field">
+          <label for="newName">Product Name</label>
+          <input type="text" id="newName" placeholder="e.g., NEW SPIRIT NAME" />
+        </div>
+        <div class="field">
+          <label for="newVolume">Volume (ml)</label>
+          <input type="number" id="newVolume" min="0" step="10" placeholder="e.g., 700" />
+        </div>
+        <div class="field">
+          <label for="newQty">Qty</label>
+          <input type="number" id="newQty" min="0" step="1" value="1" />
+        </div>
+        <div class="field">
+          <label for="newCost">Cost Price ($)</label>
+          <input type="number" id="newCost" step="0.01" placeholder="e.g., 20.00" />
+        </div>
+        <div class="field">
+          <label for="newSell">Sell Price ($)</label>
+          <input type="number" id="newSell" step="0.01" placeholder="e.g., 28.00" />
+        </div>
+        <div class="field">
+          <label for="newShip">Shipping ($)</label>
+          <input type="number" id="newShip" step="0.01" value="0" />
+        </div>
+        <div class="field">
+          <label for="newDelivery">Delivery ($)</label>
+          <input type="number" id="newDelivery" step="0.01" value="0" />
+        </div>
+        <div class="field" style="align-self: end;">
+          <button class="btn-primary" onclick="addProductFromForm()">Add Product</button>
+        </div>
+      </div>
+      <div style="overflow-x: auto;">
+        <table id="dataTable">
+          <thead>
+            <tr>
+              <th style="text-align: left;">Product</th>
+              <th style="text-align: center;">Volume (ml / cl)</th>
+              <th style="text-align: center;">Qty</th>
+              <th>Unit Price</th>
+              <th>Shipping</th>
+              <th>Delivery</th>
+              <th>Total Cost</th>
+              <th>Sell Price</th>
+              <th>Net Profit</th>
+              <th>Net Margin %</th>
+              <th>ROI %</th>
+            </tr>
+          </thead>
+          <tbody id="tableBody"></tbody>
+          <tfoot id="tableFoot"></tfoot>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <section class="brand-banner">
+    <p style="text-align:center;font-size:1rem;letter-spacing:.5px;margin:0 0 18px;">Business Analytics for Distribution</p>
+    <p style="text-align:center;margin:0;font-size:.85rem;opacity:.85;">© <span id="year"></span> C‑Berry Labs · Canterbury Research</p>
+  </section>
+
+  <script>
+    var items = [
+      { id: 1, name: "JOHNNIE WALKER BLACK LABEL", qty: 1, volumeMl: 1000, costPrice: 35.00, sellPrice: 49.95, shippingCost: 3.00, pickupDelivery: 2.00 },
+      { id: 2, name: "JOHNNIE WALKER WHISKY RED LABEL", qty: 1, volumeMl: 1000, costPrice: 18.00, sellPrice: 25.50, shippingCost: 2.50, pickupDelivery: 2.00 },
+      { id: 3, name: "JACK DANIEL'S TENNESSEE WHISKEY", qty: 1, volumeMl: 1000, costPrice: 30.00, sellPrice: 42.50, shippingCost: 2.75, pickupDelivery: 2.00 },
+      { id: 4, name: "HENNESSY VERY SPECIAL COGNAC", qty: 1, volumeMl: 700, costPrice: 37.50, sellPrice: 52.50, shippingCost: 3.00, pickupDelivery: 2.00 },
+      { id: 5, name: "ABSOLUT VODKA 40%", qty: 1, volumeMl: 700, costPrice: 12.00, sellPrice: 17.50, shippingCost: 2.00, pickupDelivery: 1.50 },
+      { id: 6, name: "GORDON LONDON DRY GIN", qty: 1, volumeMl: 1000, costPrice: 13.00, sellPrice: 18.50, shippingCost: 2.25, pickupDelivery: 1.50 },
+      { id: 7, name: "BOMBAY SAPPHIRE LONDON DRY GIN", qty: 1, volumeMl: 1000, costPrice: 22.00, sellPrice: 31.50, shippingCost: 2.50, pickupDelivery: 2.00 },
+      { id: 8, name: "JOSE CUERVO BLUE AGAVE SILVER TEQUILA", qty: 1, volumeMl: 1000, costPrice: 20.00, sellPrice: 28.95, shippingCost: 2.50, pickupDelivery: 2.00 },
+      { id: 9, name: "JOSE CUERVO ESPECIAL GOLD", qty: 1, volumeMl: 1000, costPrice: 21.00, sellPrice: 29.95, shippingCost: 2.50, pickupDelivery: 2.00 },
+      { id: 10, name: "BACARDI SUPERIOR CARTA BLANCA RUM", qty: 1, volumeMl: 1000, costPrice: 19.50, sellPrice: 27.95, shippingCost: 2.50, pickupDelivery: 2.00 },
+      { id: 11, name: "MALIBU COCONUT LIQUEUR ORIGINAL", qty: 1, volumeMl: 1000, costPrice: 19.00, sellPrice: 26.95, shippingCost: 2.25, pickupDelivery: 1.75 },
+      { id: 12, name: "CAPTAIN MORGAN BLACK RUM", qty: 1, volumeMl: 1000, costPrice: 18.75, sellPrice: 26.50, shippingCost: 2.25, pickupDelivery: 1.75 },
+      { id: 13, name: "CAMPARI BITTER", qty: 1, volumeMl: 1000, costPrice: 18.50, sellPrice: 26.50, shippingCost: 2.25, pickupDelivery: 1.75 },
+      { id: 14, name: "DE KUYPER TRIPLE SEC LIQUEUR", qty: 1, volumeMl: 700, costPrice: 15.00, sellPrice: 21.50, shippingCost: 2.00, pickupDelivery: 1.50 },
+      { id: 15, name: "BAILEYS IRISH CREAM", qty: 1, volumeMl: 1000, costPrice: 22.00, sellPrice: 31.00, shippingCost: 2.50, pickupDelivery: 2.00 }
+    ];
+
+    var adminCosts = { warehousingPerItem: 0.50, insurancePerItem: 0.25, laborPerItem: 1.00 };
+    var marginChart, revenueChart;
+
+    function volumeConversions(ml) { return { ml: ml, cl: ml / 10, liters: ml / 1000, oz: ml * 0.033814, gallons: ml / 3785.41 }; }
+
+    function calculateMetrics(item) {
+      var totalAdmin = adminCosts.warehousingPerItem + adminCosts.insurancePerItem + adminCosts.laborPerItem;
+      var totalCost = item.costPrice + item.shippingCost + item.pickupDelivery + totalAdmin;
+      var grossProfit = item.sellPrice - item.costPrice;
+      var netProfit = item.sellPrice - totalCost;
+      var grossMargin = ((grossProfit / item.sellPrice) * 100).toFixed(2);
+      var netMargin = ((netProfit / item.sellPrice) * 100).toFixed(2);
+      var roi = ((netProfit / totalCost) * 100).toFixed(2);
+      return { totalCost: totalCost, grossProfit: grossProfit, netProfit: netProfit, grossMargin: grossMargin, netMargin: netMargin, roi: roi };
+    }
+
+    function updateItem(id, field, value) {
+      for (var i = 0; i < items.length; i++) {
+        if (items[i].id === id) { items[i][field] = parseFloat(value) || 0; break; }
+      }
+      render();
+    }
+
+    function calculateTotals() {
+      var revenue = 0, cogs = 0, shipping = 0, delivery = 0, admin = 0;
+      for (var i = 0; i < items.length; i++) {
+        var item = items[i];
+        revenue += item.sellPrice * item.qty;
+        cogs += item.costPrice * item.qty;
+        shipping += item.shippingCost * item.qty;
+        delivery += item.pickupDelivery * item.qty;
+        admin += (adminCosts.warehousingPerItem + adminCosts.insurancePerItem + adminCosts.laborPerItem) * item.qty;
+      }
+      var totalCost = cogs + shipping + delivery + admin;
+      var totalNetProfit = revenue - totalCost;
+      var aggregateMargin = ((totalNetProfit / revenue) * 100).toFixed(2);
+      return { revenue: revenue, cogs: cogs, shipping: shipping, delivery: delivery, admin: admin, totalCost: totalCost, totalNetProfit: totalNetProfit, aggregateMargin: aggregateMargin };
+    }
+
+    function renderMetrics() {
+      var totals = calculateTotals();
+      var allMetrics = []; for (var i = 0; i < items.length; i++) { allMetrics.push(calculateMetrics(items[i])); }
+      var avgROI = 0; for (var i = 0; i < allMetrics.length; i++) { avgROI += parseFloat(allMetrics[i].roi); }
+      avgROI = (avgROI / items.length).toFixed(1);
+      var metricsHTML = '<div class="metric-card"><div class="metric-label">Total Revenue</div><div class="metric-value metric-blue">$' + totals.revenue.toFixed(2) + '</div></div>';
+      metricsHTML += '<div class="metric-card"><div class="metric-label">Total Cost</div><div class="metric-value metric-red">$' + totals.totalCost.toFixed(2) + '</div></div>';
+      metricsHTML += '<div class="metric-card"><div class="metric-label">Total Profit</div><div class="metric-value metric-green">$' + totals.totalNetProfit.toFixed(2) + '</div></div>';
+      metricsHTML += '<div class="metric-card"><div class="metric-label">Net Margin</div><div class="metric-value metric-purple">' + totals.aggregateMargin + '%</div></div>';
+      metricsHTML += '<div class="metric-card"><div class="metric-label">Avg ROI</div><div class="metric-value metric-orange">' + avgROI + '%</div></div>';
+      document.getElementById('metricsGrid').innerHTML = metricsHTML;
+    }
+
+    function renderCostBreakdown() {
+      var totals = calculateTotals();
+      var costHTML = '<div class="cost-item bg-blue-50"><div class="cost-item-label">COGS</div><div class="cost-item-value">$' + totals.cogs.toFixed(2) + '</div><div class="cost-item-pct">' + ((totals.cogs/totals.totalCost)*100).toFixed(1) + '% of total</div></div>';
+      costHTML += '<div class="cost-item bg-red-50"><div class="cost-item-label">Shipping</div><div class="cost-item-value">$' + totals.shipping.toFixed(2) + '</div><div class="cost-item-pct">' + ((totals.shipping/totals.totalCost)*100).toFixed(1) + '% of total</div></div>';
+      costHTML += '<div class="cost-item bg-yellow-50"><div class="cost-item-label">Pickup/Delivery</div><div class="cost-item-value">$' + totals.delivery.toFixed(2) + '</div><div class="cost-item-pct">' + ((totals.delivery/totals.totalCost)*100).toFixed(1) + '% of total</div></div>';
+      costHTML += '<div class="cost-item bg-purple-50"><div class="cost-item-label">Admin (W+I+L)</div><div class="cost-item-value">$' + totals.admin.toFixed(2) + '</div><div class="cost-item-pct">' + ((totals.admin/totals.totalCost)*100).toFixed(1) + '% of total</div></div>';
+      costHTML += '<div class="cost-item bg-green-50"><div class="cost-item-label">COGS %</div><div class="cost-item-value">' + ((totals.cogs/totals.revenue)*100).toFixed(1) + '%</div><div class="cost-item-pct">of revenue</div></div>';
+      document.getElementById('costBreakdown').innerHTML = costHTML;
+    }
+
+    function renderCharts() {
+      var allMetrics = []; for (var i = 0; i < items.length; i++) { allMetrics.push(calculateMetrics(items[i])); }
+      var chartData = []; for (var i = 0; i < items.length; i++) { var item = items[i]; chartData.push({ name: item.name.substring(0, 15), netMargin: parseFloat(allMetrics[i].netMargin), revenue: item.sellPrice, cost: allMetrics[i].totalCost }); }
+      var marginCtx = document.getElementById('marginChart').getContext('2d'); if (marginChart) marginChart.destroy();
+      var marginLabels = []; var marginData = []; for (var i = 0; i < chartData.length; i++) { marginLabels.push(chartData[i].name); marginData.push(chartData[i].netMargin); }
+      marginChart = new Chart(marginCtx, { type: 'bar', data: { labels: marginLabels, datasets: [{ label: 'Net Margin %', data: marginData, backgroundColor: '#10b981', borderRadius: 4 }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true } } } });
+      var revenueCtx = document.getElementById('revenueChart').getContext('2d'); if (revenueChart) revenueChart.destroy();
+      var revenueLabels = []; var revenueData = []; var costData = []; for (var i = 0; i < chartData.length; i++) { revenueLabels.push(chartData[i].name); revenueData.push(chartData[i].revenue); costData.push(chartData[i].cost); }
+      revenueChart = new Chart(revenueCtx, { type: 'bar', data: { labels: revenueLabels, datasets: [ { label: 'Revenue', data: revenueData, backgroundColor: '#3b82f6', borderRadius: 4 }, { label: 'Cost', data: costData, backgroundColor: '#ef4444', borderRadius: 4 } ] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: true } }, scales: { y: { beginAtZero: true } } } });
+    }
+
+    function renderTable() {
+      var allMetrics = []; for (var i = 0; i < items.length; i++) { allMetrics.push(calculateMetrics(items[i])); }
+      var totals = calculateTotals(); var tbody = '';
+      for (var i = 0; i < items.length; i++) {
+        var item = items[i]; var metrics = allMetrics[i]; var conversion = volumeConversions(item.volumeMl);
+        var profitClass = metrics.netProfit >= 0 ? 'text-green' : 'text-red';
+        var marginClass = metrics.netMargin >= 20 ? 'text-green' : 'text-orange';
+        var clVol = conversion.cl; var sellPerCl = clVol > 0 ? (item.sellPrice / clVol) : null; var costPerCl = clVol > 0 ? (metrics.totalCost / clVol) : null;
+        tbody += '<tr>';
+        tbody += '<td style="text-align: left;">' + item.name.substring(0, 30) + '</td>';
+        tbody += '<td style="text-align: center;">' +
+                  '<div class="volume-display">' +
+                    '<div class="volume-ml">' +
+                      '<input type="number" min="0" step="10" value="' + item.volumeMl + '" onchange="updateItem(' + item.id + ', \'volumeMl\', this.value)" /> ml' +
+                    '</div>' +
+                    '<div class="volume-cl">' + conversion.cl.toFixed(1) + 'cl</div>' +
+                    '<div class="volume-percl">' + (sellPerCl !== null ? ('$' + sellPerCl.toFixed(2) + '/cl') : '—/cl') + ' sell</div>' +
+                    '<div class="volume-percl">' + (costPerCl !== null ? ('$' + costPerCl.toFixed(2) + '/cl') : '—/cl') + ' cost</div>' +
+                  '</div>' +
+                '</td>';
+        tbody += '<td style="text-align: center;"><input type="number" value="' + item.qty + '" onchange="updateItem(' + item.id + ', \'qty\', this.value)"></td>';
+        tbody += '<td>$' + item.costPrice.toFixed(2) + '</td>';
+        tbody += '<td><input type="number" step="0.01" value="' + item.shippingCost + '" onchange="updateItem(' + item.id + ', \'shippingCost\', this.value)"></td>';
+        tbody += '<td><input type="number" step="0.01" value="' + item.pickupDelivery + '" onchange="updateItem(' + item.id + ', \'pickupDelivery\', this.value)"></td>';
+        tbody += '<td>$' + metrics.totalCost.toFixed(2) + '</td>';
+        tbody += '<td>$' + item.sellPrice.toFixed(2) + '</td>';
+        tbody += '<td class="' + profitClass + '">$' + metrics.netProfit.toFixed(2) + '</td>';
+        tbody += '<td class="' + marginClass + '">' + metrics.netMargin + '%</td>';
+        tbody += '<td>' + metrics.roi + '%</td>';
+        tbody += '</tr>';
+      }
+      document.getElementById('tableBody').innerHTML = tbody;
+      var tfoot = '<tr>';
+      tfoot += '<td style="text-align: left;">TOTALS</td>';
+      tfoot += '<td></td>';
+      tfoot += '<td style="text-align: center;">' + (function() { var sum = 0; for (var i = 0; i < items.length; i++) sum += items[i].qty; return sum; })() + '</td>';
+      tfoot += '<td>$' + totals.cogs.toFixed(2) + '</td>';
+      tfoot += '<td>$' + totals.shipping.toFixed(2) + '</td>';
+      tfoot += '<td>$' + totals.delivery.toFixed(2) + '</td>';
+      tfoot += '<td>$' + totals.totalCost.toFixed(2) + '</td>';
+      tfoot += '<td>$' + totals.revenue.toFixed(2) + '</td>';
+      tfoot += '<td class="text-green">$' + totals.totalNetProfit.toFixed(2) + '</td>';
+      tfoot += '<td class="text-green">' + totals.aggregateMargin + '%</td>';
+      tfoot += '<td>-</td>';
+      tfoot += '</tr>';
+      document.getElementById('tableFoot').innerHTML = tfoot;
+    }
+
+    function render() { renderMetrics(); renderCostBreakdown(); renderCharts(); renderTable(); }
+
+    function addProductFromForm() {
+      var name = (document.getElementById('newName').value || '').trim();
+      var volume = parseFloat(document.getElementById('newVolume').value);
+      var qty = parseInt(document.getElementById('newQty').value, 10);
+      var cost = parseFloat(document.getElementById('newCost').value);
+      var sell = parseFloat(document.getElementById('newSell').value);
+      var ship = parseFloat(document.getElementById('newShip').value);
+      var delv = parseFloat(document.getElementById('newDelivery').value);
+
+      if (!name) { alert('Please enter a product name.'); return; }
+      if (!isFinite(volume) || volume <= 0) { alert('Please enter a valid volume in ml (> 0).'); return; }
+      if (!isFinite(qty) || qty < 0) { alert('Please enter a valid quantity (>= 0).'); return; }
+      if (!isFinite(cost) || cost < 0) { alert('Please enter a valid cost price (>= 0).'); return; }
+      if (!isFinite(sell) || sell < 0) { alert('Please enter a valid sell price (>= 0).'); return; }
+      if (!isFinite(ship) || ship < 0) { alert('Please enter a valid shipping cost (>= 0).'); return; }
+      if (!isFinite(delv) || delv < 0) { alert('Please enter a valid delivery cost (>= 0).'); return; }
+
+      var newId = 1; for (var i = 0; i < items.length; i++) { if (items[i].id >= newId) newId = items[i].id + 1; }
+      items.push({ id: newId, name: name, qty: qty, volumeMl: volume, costPrice: cost, sellPrice: sell, shippingCost: ship, pickupDelivery: delv });
+
+      document.getElementById('newName').value = '';
+      document.getElementById('newVolume').value = '';
+      document.getElementById('newQty').value = 1;
+      document.getElementById('newCost').value = '';
+      document.getElementById('newSell').value = '';
+      document.getElementById('newShip').value = 0;
+      document.getElementById('newDelivery').value = 0;
+
+      render();
+    }
+
+    render();
+    var yearEl = document.getElementById('year'); if (yearEl) { yearEl.textContent = new Date().getFullYear(); }
+  </script>
+</body>
+</html>

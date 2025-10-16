@@ -47,6 +47,7 @@ document.addEventListener('DOMContentLoaded', () => {
 const sampleProjects = [
   { title: 'Visualizing Geopolitics', desc: 'A prompt‑to‑map VLM prototype that turns text summaries into cartographic layers, styles, and AOIs.', tags: ['VLM', 'Geopolitics', 'Maps'], link: 'visualizing-geopolitics.html' },
   { title: 'Lending with Care', desc: 'A family‑lending chat sandbox with budget guardrails, categories, and terms—designed for clear approvals and boundaries.', tags: ['LLM', 'Finance', 'Guardrails'], link: 'lending-with-care.html' },
+  { title: 'Spirits Analytics', desc: 'Interactive margin and profitability analysis for distribution with editable volumes and conversions.', tags: ['Analytics', 'Business'], link: 'spirits-analytics.html' },
   { title: 'Spatial Demand Forecasting', desc: 'Time‑series + spatial features to anticipate demand hot‑spots and guide resource placement.', tags: ['ML', 'Time Series'], link: '#projects' },
 ];
 
